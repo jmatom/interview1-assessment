@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"interview1-assessment/internal/platform/server/handler/health"
+	events "interview1-assessment/internal/platform/server/handler/tracking/events"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -30,4 +31,6 @@ func (s *Server) Run() error {
 
 func (s *Server) registerRoutes() {
 	s.engine.GET("/health", health.CheckHandler())
+
+	s.engine.POST("/tracking/events", events.CreateEventHandler())
 }
