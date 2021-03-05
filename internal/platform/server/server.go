@@ -3,7 +3,8 @@ package server
 import (
 	"fmt"
 	"interview1-assessment/internal/platform/server/handler/health"
-	events "interview1-assessment/internal/platform/server/handler/tracking/events"
+	handler "interview1-assessment/internal/platform/server/handler/tracking"
+	"interview1-assessment/internal/tracking"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -12,12 +13,16 @@ import (
 type Server struct {
 	httpAddr string
 	engine   *gin.Engine
+
+	counter tracking.CounterRepository
 }
 
-func New(host string, port uint) Server {
+func New(host string, port uint, counter tracking.CounterRepository) Server {
 	srv := Server{
 		engine:   gin.New(),
 		httpAddr: fmt.Sprintf("%s:%d", host, port),
+
+		counter: counter,
 	}
 
 	srv.registerRoutes()
@@ -32,5 +37,6 @@ func (s *Server) Run() error {
 func (s *Server) registerRoutes() {
 	s.engine.GET("/health", health.CheckHandler())
 
-	s.engine.POST("/tracking/events", events.CreateEventHandler())
+	s.engine.POST("/tracking/events", handler.CreateEventHandler(s.counter))
+	s.engine.GET("/tracking/metrics", handler.CreateEventHandlerGetVisits(s.counter))
 }

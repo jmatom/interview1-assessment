@@ -1,9 +1,9 @@
-package tracking_events
+package handler_tracking
 
 import (
 	"net/http"
 
-	tracking_event "interview1-assessment/internal"
+	"interview1-assessment/internal/tracking"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,25 +14,20 @@ type createRequest struct {
 }
 
 // createEventHandler returns an HTTP handler to increment a counter
-func CreateEventHandler() gin.HandlerFunc {
+func CreateEventHandler(counter tracking.CounterRepository) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		/*
-			course, err := mooc.NewCourse(req.ID, req.Name, req.Duration)
-			if err != nil {
-				ctx.JSON(http.StatusBadRequest, err.Error())
-				return
-			}
-		*/
 		var req createRequest
 		if err := ctx.BindJSON(&req); err != nil {
 			ctx.JSON(http.StatusBadRequest, err.Error())
 			return
 		}
 
-		_, err := tracking_event.NewTrackingEvent(req.Uid, req.Url)
+		trackingEvent, err := tracking.NewTrackingEvent(req.Uid, req.Url)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, err.Error())
 		}
+
+		counter.AddVisit(trackingEvent)
 
 		// Event is accepted because counter will be increased eventually
 		ctx.String(http.StatusAccepted, "Event registered")
