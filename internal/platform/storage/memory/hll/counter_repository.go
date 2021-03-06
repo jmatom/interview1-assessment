@@ -1,7 +1,6 @@
 package counterrepo
 
 import (
-	"fmt"
 	tracking "interview1-assessment/internal/tracking"
 
 	"sync"
@@ -23,11 +22,11 @@ func (c *CounterRepository) AddVisit(trackingEvent tracking.TrackingEvent) error
 	hllInitial := hyperloglog.New16()
 	hll, loaded := c.visits.LoadOrStore(trackingEvent.Url().Hash(), hllInitial)
 	if loaded {
-		fmt.Printf("loaded is true! insert %s", trackingEvent.Uid().String())
+		// fmt.Printf("loaded is true! insert %s %s\n", trackingEvent.Uid().String(), trackingEvent.Url().Hash())
 		hll.(*hyperloglog.Sketch).Insert([]byte(trackingEvent.Uid().String()))
 		c.visits.Store(trackingEvent.Url().Hash(), hll)
 	} else {
-		fmt.Printf("loaded is false! insert %s", trackingEvent.Uid().String())
+		// fmt.Printf("loaded is false! insert %s\n", trackingEvent.Uid().String())
 		hllInitial.Insert([]byte(trackingEvent.Uid().String()))
 		c.visits.Store(trackingEvent.Url().Hash(), hllInitial)
 	}
@@ -36,6 +35,7 @@ func (c *CounterRepository) AddVisit(trackingEvent tracking.TrackingEvent) error
 }
 
 func (c *CounterRepository) GetVisits(url tracking.Url) uint64 {
+	// sfmt.Printf("getVisits: %s\n", url.Hash())
 	hll, ok := c.visits.Load(url.Hash())
 	if ok {
 		return hll.(*hyperloglog.Sketch).Estimate()

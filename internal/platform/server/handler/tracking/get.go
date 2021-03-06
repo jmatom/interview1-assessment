@@ -1,7 +1,6 @@
 package handler_tracking
 
 import (
-	"fmt"
 	"interview1-assessment/internal/tracking"
 	"net/http"
 
@@ -19,9 +18,5 @@ func CreateEventHandlerGetVisits(counter tracking.CounterRepository) gin.Handler
 		visits := counter.GetVisits(url)
 
 		ctx.String(200, "%d", visits)
-
-		fmt.Printf("url hash %s\n", url.Hash())
-		fmt.Printf("url string %s\n", url.String())
-		fmt.Printf("url visits %d\n", visits)
 	}
 }

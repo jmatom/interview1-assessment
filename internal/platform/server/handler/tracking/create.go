@@ -29,7 +29,6 @@ func CreateEventHandler(counter tracking.CounterRepository) gin.HandlerFunc {
 
 		counter.AddVisit(trackingEvent)
 
-		// Event is accepted because counter will be increased eventually
-		ctx.String(http.StatusAccepted, "Event registered")
+		ctx.String(http.StatusCreated, "")
 	}
 }

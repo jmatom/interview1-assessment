@@ -1,10 +1,12 @@
 package tracking
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"net/url"
+	neturl "net/url"
 )
 
 // Define a Value Object following Domain Driven Design guidelines
@@ -33,6 +35,7 @@ func NewUid(value string) (Uid, error) {
 // Url Value Object
 type Url struct {
 	value string
+	hash  string
 }
 
 func (url Url) String() string {
@@ -48,7 +51,34 @@ func (url Url) String() string {
 	The purpose is to have an unique identifier per url
  **/
 func (url Url) Hash() string {
-	hash := sha256.Sum256([]byte(url.value))
+	return url.hash
+}
+
+func calculateHash(url string) string {
+	// let's normalize the url, ordered the query values and generating the hash
+	// format: protocol + user:pass@hostname:port + pathname + query + hash
+	// Query().Encode() sorts query params automatically
+	u, _ := neturl.ParseRequestURI(url)
+	/*
+		fmt.Printf("Scheme: %s\n", u.Scheme)
+		fmt.Printf("user:password: %s\n", u.User.String())
+		fmt.Printf("hostname:port: %s\n", u.Host) // Host = host:port
+		fmt.Printf("pathname: %s\n", u.Path)
+		fmt.Printf("raw query: %s\n", u.Query().Encode())
+		fmt.Printf("raw hash: %s\n", u.Fragment)
+	*/
+
+	var urlUnified bytes.Buffer
+	urlUnified.WriteString(u.Scheme)
+	urlUnified.WriteString(u.User.String())
+	urlUnified.WriteString(u.Host)
+	urlUnified.WriteString(u.Path)
+	urlUnified.WriteString(u.Query().Encode())
+	urlUnified.WriteString(u.Fragment)
+
+	hash := sha256.Sum256([]byte(urlUnified.String()))
+
+	// fmt.Printf("hash generated: %s\n", urlUnified.String())
 
 	return hex.EncodeToString(hash[:])
 }
@@ -58,6 +88,8 @@ func NewUrl(value string) (Url, error) {
 		return Url{}, ErrEmptyUrl
 	}
 
+	// let's normalize the url, ordered the query values and generating the hash
+
 	_, error := url.ParseRequestURI(value)
 	if error != nil {
 		return Url{}, error
@@ -65,6 +97,7 @@ func NewUrl(value string) (Url, error) {
 
 	return Url{
 		value: value,
+		hash:  calculateHash(value),
 	}, nil
 }
 
