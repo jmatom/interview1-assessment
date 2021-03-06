@@ -24,18 +24,24 @@ Build a GoLang web service capable of:
 * Serving the number of distinct visitors for any given page via another REST HTTP endpoint. The page URL we are interested in should be a query parameter of the HTTP request. The number of distinct visitors for that URL is returned as a number in plain text.
 
 **REST Interface**
-```
-# Register a new tracking event
-curl --location --request POST '{host}/tracking/events' \
+
+* Register a new tracking event
+```curl --location --request POST 'http://{hosot}/tracking/events' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "uid": "user-unique-identifier",
-    "url": "https://url-of-visited-page.com/login?theme=dark"
-}'
-
-# Get number of visits from a given url
-curl -X POST {host}/tracking/events?url=https://url-of-visited-page.com/login?theme=dark -v
+    "url": "http://localhost:8080/tracking/events?bar=2&foo=1"
+}' -v
 ```
+
+* Get number of visits from a given url
+```
+curl http://{host}/tracking/metrics\?url\=http%3A%2F%2Flocalhost%3A8080%2Ftracking%2Fevents%3Ffoo%3D1%26bar%3D2 -v
+```
+* Notice previous url value needs to be encoded previously:
+* * url to get data from: http://localhost:8080/tracking/events?bar=2&foo=1
+* * url encoded to be compatible with http protocol: http%3A%2F%2Flocalhost%3A8080%2Ftracking%2Fevents%3Ffoo%3D1%26bar%3D2
+
 
 ### Constraints
 * There is no need for persistence to a database. Everything can be kept in memory.
@@ -44,5 +50,6 @@ curl -X POST {host}/tracking/events?url=https://url-of-visited-page.com/login?th
 
 ## Make it work
 ```
+go install
 go run cmd/api/main.go
 ```
