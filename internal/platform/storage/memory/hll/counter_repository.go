@@ -20,16 +20,8 @@ func (c *CounterRepository) AddVisit(trackingEvent tracking.TrackingEvent) error
 	// For the given url, get the hll
 	// add user uid
 	hllInitial := hyperloglog.New16()
-	hll, loaded := c.visits.LoadOrStore(trackingEvent.Url().Hash(), hllInitial)
-	if loaded {
-		// fmt.Printf("loaded is true! insert %s %s\n", trackingEvent.Uid().String(), trackingEvent.Url().Hash())
-		hll.(*hyperloglog.Sketch).Insert([]byte(trackingEvent.Uid().String()))
-		c.visits.Store(trackingEvent.Url().Hash(), hll)
-	} else {
-		// fmt.Printf("loaded is false! insert %s\n", trackingEvent.Uid().String())
-		hllInitial.Insert([]byte(trackingEvent.Uid().String()))
-		c.visits.Store(trackingEvent.Url().Hash(), hllInitial)
-	}
+	hll, _ := c.visits.LoadOrStore(trackingEvent.Url().Hash(), hllInitial)
+	hll.(*hyperloglog.Sketch).Insert([]byte(trackingEvent.Uid().String()))
 
 	return nil
 }
