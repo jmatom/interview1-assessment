@@ -5,7 +5,7 @@ import (
 
 	"sync"
 
-	"github.com/axiomhq/hyperloglog"
+	hyper "github.com/jmatom/hyper"
 )
 
 type CounterRepository struct {
@@ -19,18 +19,18 @@ type CounterRepository struct {
 func (c *CounterRepository) AddVisit(trackingEvent tracking.TrackingEvent) error {
 	// For the given url, get the hll
 	// add user uid
-	hllInitial := hyperloglog.New16()
+
+	hllInitial := hyper.New(uint32(18), true)
 	hll, _ := c.visits.LoadOrStore(trackingEvent.Url().Hash(), hllInitial)
-	hll.(*hyperloglog.Sketch).Insert([]byte(trackingEvent.Uid().String()))
+	hll.(*hyper.HyperLogLog).Add([]byte(trackingEvent.Uid().String()))
 
 	return nil
 }
 
 func (c *CounterRepository) GetVisits(url tracking.Url) uint64 {
-	// sfmt.Printf("getVisits: %s\n", url.Hash())
 	hll, ok := c.visits.Load(url.Hash())
 	if ok {
-		return hll.(*hyperloglog.Sketch).Estimate()
+		return hll.(*hyper.HyperLogLog).Count()
 	}
 
 	return 0
